@@ -11,15 +11,15 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content Type", "text/html")
-		tmpl, err := template.New("test").Parse(doc)
-
-		if err == nil {
-			context := Context{
-				[3]string{"Apple", "Orange", "Banana"},
-				"a title",
-			}
-			tmpl.Execute(w, context)
+		templates := template.New("template")
+		templates.New("test").Parse(doc)
+		templates.New("header").Parse(header)
+		templates.New("footer").Parse(footer)
+		context := Context{
+			[3]string{"Apple", "Orange", "Banana"},
+			"a title",
 		}
+		templates.Lookup("test").Execute(w, context)
 	})
 
 	fmt.Printf("Serving on port " + port)
@@ -27,10 +27,7 @@ func main() {
 }
 
 const doc = `
-	<html>
-  <head>
-    <title>{{.Title}}</title>
-  </head>
+{{template "header" .Title}}
   <body>
     <h1>List of fruit</h1>
 		<ul>
@@ -39,6 +36,15 @@ const doc = `
 			{{end}}
 		</ul>
   </body>
+	{{template "footer"}}
+`
+const header = `<html>
+<head>
+	<title>{{.}}</title>
+</head>
+`
+
+const footer = `
 	</html>
 `
 
