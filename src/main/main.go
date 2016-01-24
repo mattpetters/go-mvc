@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -21,11 +22,16 @@ type HTTPHandler struct {
 
 func (this *HTTPHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	path := "public" + request.URL.Path
-	data, err := ioutil.ReadFile(string(path))
+
+	//data, err := ioutil.ReadFile(string(path))
+
+	f, err := os.Open(path)
 
 	fmt.Printf(path)
 
 	if err == nil {
+		bufferedReader := bufio.NewReader(f)
+
 		var contentType string
 
 		if strings.HasSuffix(path, ".css") {
@@ -41,7 +47,8 @@ func (this *HTTPHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		}
 
 		writer.Header().Add("Content Type", contentType)
-		writer.Write(data)
+		//writer.Write(data)
+		bufferedReader.WriteTo(writer)
 	} else {
 		writer.WriteHeader(404)
 		writer.Write([]byte("404 - " + http.StatusText(404)))
