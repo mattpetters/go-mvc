@@ -3,52 +3,50 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"text/template"
 )
 
 func main() {
 	port := ":8080"
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content Type", "text/html")
-		templates := template.New("template")
-		templates.New("test").Parse(doc)
-		templates.New("header").Parse(header)
-		templates.New("footer").Parse(footer)
-		context := Context{
-			[3]string{"Apple", "Orange", "Banana"},
-			"a title",
-		}
-		templates.Lookup("test").Execute(w, context)
-	})
+	templates := populateTemplates()
+	http.HandleFunc("/",
+		func(w http.ResponseWriter, r *http.Request) {
+			requestedFile := r.URL.Path[1:]
+			template := templates.Lookup(requestedFile + ".html")
+			fmt.Printf(requestedFile)
+
+			if template != nil {
+				template.Execute(w, nil)
+			} else {
+				w.WriteHeader(404)
+			}
+
+		})
 
 	fmt.Printf("Serving on port " + port)
 	http.ListenAndServe(port, nil)
+
 }
 
-const doc = `
-{{template "header" .Title}}
-  <body>
-    <h1>List of fruit</h1>
-		<ul>
-			{{range .Fruit}}
-				<li>{{.}}</li>
-			{{end}}
-		</ul>
-  </body>
-	{{template "footer"}}
-`
-const header = `<html>
-<head>
-	<title>{{.}}</title>
-</head>
-`
+func populateTemplates() *template.Template {
+	result := template.New("templates")
 
-const footer = `
-	</html>
-`
+	basePath := "templates"
+	templateFolder, _ := os.Open(basePath)
+	defer templateFolder.Close()
 
-type Context struct {
-	Fruit [3]string
-	Title string
+	templatePathsRaw, _ := templateFolder.Readdir(-1)
+
+	templatePaths := new([]string)
+
+	for _, pathInfo := range templatePathsRaw {
+		if !pathInfo.IsDir() {
+			*templatePaths = append(*templatePaths, basePath+"/"+pathInfo.Name())
+		}
+	}
+
+	result.ParseFiles(*templatePaths...)
+	return result
 }
