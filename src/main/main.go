@@ -14,8 +14,8 @@ func main() {
 		tmpl, err := template.New("test").Parse(doc)
 
 		if err == nil {
-			context := Context{"this is the message"}
-			tmpl.Execute(w, context)
+			//context := Context{"this is the message"}
+			tmpl.Execute(w, r.URL.Path)
 		}
 	})
 
@@ -29,13 +29,15 @@ const doc = `
     <title>Hello</title>
   </head>
   <body>
-    <h1>This is an HTML page being served by Go</h1>
-		<h2>{{.Message}}</h2>
-    <img src="http://pngimg.com/upload/dog_PNG2422.png" alt="" />
+    {{if eq . "/Google"}}
+		 	<h1>Google made go</h1>
+		{{else}}
+			<h1>Hello {{.}}</h1>
+		{{end}}
   </body>
 	</html>
 `
 
-type Context struct {
-	Message string
-}
+// type Context struct {
+// 	Message string
+// }
