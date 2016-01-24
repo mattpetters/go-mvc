@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -25,9 +27,38 @@ func main() {
 
 		})
 
+	http.HandleFunc("/img/", serveResource)
+	http.HandleFunc("/css/", serveResource)
+
 	fmt.Printf("Serving on port " + port)
 	http.ListenAndServe(port, nil)
 
+}
+
+func serveResource(w http.ResponseWriter, r *http.Request) {
+	path := "public" + r.URL.Path
+	var contentType string
+	if strings.HasSuffix(path, ".css") {
+		contentType = "text/css"
+	} else if strings.HasSuffix(path, ".png") {
+		contentType = "image/png"
+	} else {
+		contentType = "text/plain"
+	}
+
+	f, err := os.Open(path)
+
+	if err == nil {
+		//have to free up resources whenever opening files
+		defer f.Close()
+
+		w.Header().Add("Content Type", contentType)
+
+		bufferedReader := bufio.NewReader(f)
+		bufferedReader.WriteTo(w)
+	} else {
+		w.WriteHeader(404)
+	}
 }
 
 func populateTemplates() *template.Template {
