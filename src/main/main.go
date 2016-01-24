@@ -14,7 +14,8 @@ func main() {
 		tmpl, err := template.New("test").Parse(doc)
 
 		if err == nil {
-			tmpl.Execute(w, nil)
+			context := Context{"this is the message"}
+			tmpl.Execute(w, context)
 		}
 	})
 
@@ -25,11 +26,16 @@ func main() {
 const doc = `
 	<html>
   <head>
-    <title>Hello World</title>
+    <title>Hello</title>
   </head>
   <body>
     <h1>This is an HTML page being served by Go</h1>
+		<h2>{{.Message}}</h2>
     <img src="http://pngimg.com/upload/dog_PNG2422.png" alt="" />
   </body>
 	</html>
 `
+
+type Context struct {
+	Message string
+}
