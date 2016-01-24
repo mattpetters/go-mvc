@@ -14,8 +14,11 @@ func main() {
 		tmpl, err := template.New("test").Parse(doc)
 
 		if err == nil {
-			//context := Context{"this is the message"}
-			tmpl.Execute(w, r.URL.Path)
+			context := Context{
+				[3]string{"Apple", "Orange", "Banana"},
+				"a title",
+			}
+			tmpl.Execute(w, context)
 		}
 	})
 
@@ -26,18 +29,20 @@ func main() {
 const doc = `
 	<html>
   <head>
-    <title>Hello</title>
+    <title>{{.Title}}</title>
   </head>
   <body>
-    {{if eq . "/Google"}}
-		 	<h1>Google made go</h1>
-		{{else}}
-			<h1>Hello {{.}}</h1>
-		{{end}}
+    <h1>List of fruit</h1>
+		<ul>
+			{{range .Fruit}}
+				<li>{{.}}</li>
+			{{end}}
+		</ul>
   </body>
 	</html>
 `
 
-// type Context struct {
-// 	Message string
-// }
+type Context struct {
+	Fruit [3]string
+	Title string
+}
