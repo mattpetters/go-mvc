@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"viewmodels"
 )
 
 func main() {
@@ -19,8 +20,12 @@ func main() {
 			template := templates.Lookup(requestedFile + ".html")
 			fmt.Printf(requestedFile)
 
+			var context interface{}
+			if requestedFile == "index" {
+				context = viewmodels.GetHome()
+			}
 			if template != nil {
-				template.Execute(w, nil)
+				template.Execute(w, context)
 			} else {
 				w.WriteHeader(404)
 			}
