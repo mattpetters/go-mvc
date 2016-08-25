@@ -18,24 +18,31 @@ func main() {
 		func(w http.ResponseWriter, r *http.Request) {
 			requestedFile := r.URL.Path[1:]
 			template := templates.Lookup(requestedFile + ".html")
-			fmt.Printf(requestedFile)
+			fmt.Printf(requestedFile + "\n")
 
 			var context interface{}
-			if requestedFile == "index" {
-				context = viewmodels.GetHome()
+			switch requestedFile {
+				case "home":
+					context = viewmodels.GetHome()
+				case "404":
+					context = viewmodels.Get404()
+				default:
+					template = templates.Lookup("404" + ".html")
+					context = viewmodels.Get404()
+					w.WriteHeader(404)
+					fmt.Printf("Showing 404 page \n")
 			}
 			if template != nil {
 				template.Execute(w, context)
 			} else {
-				w.WriteHeader(404)
-			}
 
+			}
 		})
 
 	http.HandleFunc("/img/", serveResource)
 	http.HandleFunc("/css/", serveResource)
 
-	fmt.Printf("Serving on port " + port)
+	fmt.Printf("Serving on port " + port + "\n")
 	http.ListenAndServe(port, nil)
 
 }
