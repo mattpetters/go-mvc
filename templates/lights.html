@@ -1,0 +1,17 @@
+<html>
+{{template "_head.html" .Title}}
+  <body>
+    {{template "_header.html" .Active}}
+    <h1>lights in the house</h1>
+    <div>
+      {{range .Lights}}
+      <div class="light-block">
+        <h2>Room: {{.Room}}</h2>
+        <h2>The light is{{if eq .IsOn true}}on{{else}}off{{end}}</h2>
+        <h2>Description: {{.Description}}</h2>
+      </div>
+      {{end}}
+    </div>
+    {{template "_footer.html"}}
+  </body>
+</html>

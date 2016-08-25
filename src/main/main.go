@@ -1,76 +1,22 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"text/template"
-	"viewmodels"
+	"controllers"
 )
 
 func main() {
-	port := ":8080"
+	port := ":8000"
 
 	templates := populateTemplates()
-	http.HandleFunc("/",
-		func(w http.ResponseWriter, r *http.Request) {
-			requestedFile := r.URL.Path[1:]
-			template := templates.Lookup(requestedFile + ".html")
-			fmt.Printf(requestedFile + "\n")
-
-			var context interface{}
-			switch requestedFile {
-				case "home":
-					context = viewmodels.GetHome()
-				case "404":
-					context = viewmodels.Get404()
-				default:
-					template = templates.Lookup("404" + ".html")
-					context = viewmodels.Get404()
-					w.WriteHeader(404)
-					fmt.Printf("Showing 404 page \n")
-			}
-			if template != nil {
-				template.Execute(w, context)
-			} else {
-
-			}
-		})
-
-	http.HandleFunc("/img/", serveResource)
-	http.HandleFunc("/css/", serveResource)
+	controllers.Register(templates)
 
 	fmt.Printf("Serving on port " + port + "\n")
 	http.ListenAndServe(port, nil)
 
-}
-
-func serveResource(w http.ResponseWriter, r *http.Request) {
-	path := "public" + r.URL.Path
-	var contentType string
-	if strings.HasSuffix(path, ".css") {
-		contentType = "text/css"
-	} else if strings.HasSuffix(path, ".png") {
-		contentType = "image/png"
-	} else {
-		contentType = "text/plain"
-	}
-
-	f, err := os.Open(path)
-
-	if err == nil {
-		//have to free up resources whenever opening files
-		defer f.Close()
-
-		w.Header().Add("Content Type", contentType)
-
-		bufferedReader := bufio.NewReader(f)
-		bufferedReader.WriteTo(w)
-	} else {
-		w.WriteHeader(404)
-	}
 }
 
 func populateTemplates() *template.Template {
